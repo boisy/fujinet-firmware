@@ -25,7 +25,7 @@ public:
         BECKER
     };
 
-    bool pollingMode;
+    bool pollingMode = false;
     
     // Host & client channel queues
     std::vector<char> outgoingChannel[16];
