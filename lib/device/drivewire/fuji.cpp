@@ -30,7 +30,7 @@
 drivewireFuji theFuji; // global fuji device object
 
 // drivewireDisk drivewireDiskDevs[MAX_HOSTS];
-drivewireNetwork drivewireNetDevs[MAX_NETWORK_DEVICES];
+//drivewireNetwork drivewireNetDevs[MAX_NETWORK_DEVICES];
 
 bool _validate_host_slot(uint8_t slot, const char *dmsg = nullptr);
 bool _validate_device_slot(uint8_t slot, const char *dmsg = nullptr);

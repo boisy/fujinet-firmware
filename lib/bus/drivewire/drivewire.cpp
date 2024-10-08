@@ -379,6 +379,26 @@ int systemBus::op_cpm(std::vector<uint8_t> *q)
 
 int systemBus::op_net(std::vector<uint8_t> *q)
 {
+    int result = 0;
+    int expectedResult = 1;    
+    
+    if (q->size() >= expectedResult) {
+        int device_id = q->at(0);
+
+        // If device doesn't exist, create it.
+        if (!_netDev.contains(device_id))
+        {
+            Debug_printf("Opening new network device %u\n",device_id);
+            _netDev[device_id] = new drivewireNetwork(this);
+        }
+
+        Debug_printv("OP_NET");
+        Debug_printf("device = %d\n", device_id);
+        result = _netDev[device_id]->process(q);
+    }
+    
+    return result;
+#if 0
     int result = 1;
     
     // Get device ID
@@ -397,6 +417,7 @@ int systemBus::op_net(std::vector<uint8_t> *q)
     Debug_printf("OP_NET: %u\n", device_id);
     
     return result;
+#endif
 }
 
 int systemBus::op_unhandled(std::vector<uint8_t> *q)
@@ -876,6 +897,7 @@ int systemBus::_drivewire_process_cmd(std::vector<uint8_t> *q)
             dwStateMethod = &systemBus::op_fuji;
             break;
         case OP_NET:
+            q->erase(q->begin()); // lob off OP_NET so parsing in network.cpp can go smoothly
             dwStateMethod = &systemBus::op_net;
             break;
         case OP_CPM:

@@ -37,7 +37,7 @@ public:
     /**
      * Constructor
      */
-    drivewireNetwork();
+    drivewireNetwork(systemBus *drivewirebus);
 
     /**
      * Destructor
@@ -60,7 +60,7 @@ public:
     /**
      * @brief process network device command
      */
-    void process();
+    int process(std::vector<uint8_t> *q);
 
     /**
      * Check to see if PROCEED needs to be asserted.
@@ -70,27 +70,27 @@ public:
     /**
      * @brief Ready?
      */
-    void ready();
+    int ready(std::vector<uint8_t> *q);
 
     /**
      * @brief Get last error
      */
-    void send_error();
+    int send_error(std::vector<uint8_t> *q);
 
     /**
      * @brief send response
      */
-    void send_response();
+    int send_response(std::vector<uint8_t> *q);
     
     /**
      * Called for DRIVEWIRE Command 'O' to open a connection to a network protocol, allocate all buffers,
      */
-    virtual void open();
+    virtual int open(std::vector<uint8_t> *q);
 
     /**
      * Called for DRIVEWIRE Command 'C' to close a connection to a network protocol, de-allocate all buffers,
      */
-    virtual void close();
+    virtual int close(std::vector<uint8_t> *q);
 
     /**
      * DRIVEWIRE Read command
@@ -99,21 +99,21 @@ public:
      *  
      * @note It is the channel's responsibility to pad to required length.
      */
-    virtual void read();
+    virtual int read(std::vector<uint8_t> *q);
 
     /**
      * DRIVEWIRE Write command
      * Write # of bytes specified by aux1/aux2 from tx_buffer out to DRIVEWIRE. If protocol is unable to return requested
      * number of bytes, return ERROR.
      */
-    virtual void write();
+    virtual int write(std::vector<uint8_t> *q);
 
     /**
      * DRIVEWIRE Status Command. First try to populate NetworkStatus object from protocol. If protocol not instantiated,
      * or Protocol does not want to fill status buffer (e.g. due to unknown aux1/aux2 values), then try to deal
      * with them locally. Then serialize resulting NetworkStatus object to DRIVEWIRE.
      */
-    virtual void special();
+    virtual int special(std::vector<uint8_t> *q);
 
     /**
      * DRIVEWIRE Special, called as a default for any other DRIVEWIRE command not processed by the other drivewire_ functions.
@@ -121,34 +121,37 @@ public:
      * process the special command. Otherwise, the command is handled locally. In either case, either drivewire_complete()
      * or drivewire_error() is called.
      */
-    virtual void status();
+    virtual int status(std::vector<uint8_t> *q);
 
     /**
      * @brief set channel mode, JSON or PROTOCOL
      */
-    virtual void set_channel_mode();
+    virtual void set_channel_mode(void);
 
     /**
      * @brief Called to set prefix
      */
-    virtual void set_prefix();
+    virtual void set_prefix(void);
 
     /**
      * @brief Called to get prefix
      */
-    virtual void get_prefix();
+    virtual void get_prefix(void);
 
     /**
      * @brief called to set login
      */
-    virtual void set_login();
+    virtual void set_login(void);
 
     /**
      * @brief called to set password
      */
-    virtual void set_password();
+    virtual void set_password(void);
+
+    void resetState();
 
 private:
+    systemBus *_drivewire_bus = nullptr;
 
     /**
      * @brief the response buffer
@@ -362,12 +365,12 @@ private:
      * @brief perform local status commands, if protocol is not bound, based on cmdFrame
      * value.
      */
-    void status_local();
+    int status_local(std::vector<uint8_t> *q);
 
     /**
      * @brief perform channel status commands, if there is a protocol bound.
      */
-    void status_channel();
+    int status_channel(std::vector<uint8_t> *q);
 
     /**
      * @brief get JSON status (# of bytes in receive channel)
@@ -380,14 +383,14 @@ private:
      * or $FF - Command not supported, which should then be used as a DSTATS value by the
      * Atari when making the N: DRIVEWIRE call.
      */
-    void special_inquiry();
+    int special_inquiry(std::vector<uint8_t> *q);
 
     /**
      * @brief called to handle special protocol interactions when DSTATS=$00, meaning there is no payload.
      * Essentially, call the protocol action 
      * and based on the return, signal drivewire_complete() or error().
      */
-    void special_00();
+    int special_00(std::vector<uint8_t> *q);
 
     /**
      * @brief called to handle protocol interactions when DSTATS=$40, meaning the payload is to go from
@@ -395,7 +398,7 @@ private:
      * buffer (containing the devicespec) and based on the return, use bus_to_computer() to transfer the
      * resulting data. Currently this is assumed to be a fixed 256 byte buffer.
      */
-    void special_40();
+    int special_40(std::vector<uint8_t> *q);
 
     /**
      * @brief called to handle protocol interactions when DSTATS=$80, meaning the payload is to go from
@@ -403,7 +406,7 @@ private:
      * buffer (containing the devicespec) and based on the return, use bus_to_peripheral() to transfer the
      * resulting data. Currently this is assumed to be a fixed 256 byte buffer.
      */
-    void special_80();
+    int special_80(std::vector<uint8_t> *q);
 
     /**
      * @brief Perform the inquiry, handle both local and protocol commands.

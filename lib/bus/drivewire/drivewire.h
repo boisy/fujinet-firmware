@@ -194,6 +194,7 @@ class systemBus
 {
 public:
     int (drivewireFuji::*fnStateMethod)(std::vector<uint8_t> *);
+    int (drivewireNetwork::*nwStateMethod)(std::vector<uint8_t> *);
     void resetState(void);
 
 private:
